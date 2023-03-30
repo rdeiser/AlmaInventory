@@ -1,15 +1,15 @@
-var API_SERVICE = "https://api-eu.hosted.exlibrisgroup.com/almaws/v1/";
+var API_SERVICE = "https://api-na.hosted.exlibrisgroup.com";
 var API_REDIRECT = "php/barcodeReportRedirect.php";
 
 //Location validation Regular Expression
-var LOC_REGEX = /^main$/;
+var LOC_REGEX = /^MAIN$/;
 
 //Location format message
 var LOC_MSG = "Invalid Location";
 
 
 //Barcode validation Regular expression
-var BARCODE_REGEX = /^[0-9\-]{5,14}$/;
+var BARCODE_REGEX = /^[(A)0-9]{12}$/;
 
 //Barcode Format message
-var BARCODE_MSG = "Enter a 5-14 digit barcode containing only numbers and dashes";
+var BARCODE_MSG = "Enter a 12 digit barcode starting with the letter 'A' followed by numbers";
