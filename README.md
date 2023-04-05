@@ -86,6 +86,9 @@ The following code illustrates how to collect metrics for a set of inventory spr
 
 ## Docker Build Options
 If you wish to build a customized instance of this Docker image, the following commands can be used.
-- `docker build -t terrywbrady/alma-inventory-php -f Dockerfile.php .`
+
+`docker build -t rdeiser/alma-inventory-php -f Dockerfile.php .`
+<!-- - `docker build -t terrywbrady/alma-inventory-php -f Dockerfile.php .`
 - `docker build -t terrywbrady/alma-inventory-node -f Dockerfile.node .`
 - `docker build -t terrywbrady/alma-inventory-jetty -f Dockerfile.jetty .`
+ -->
