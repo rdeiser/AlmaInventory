@@ -34,5 +34,26 @@ class Alma {
     }
     echo "";
   }
-
 }
+  /* function putRequest($param,$body) {
+    if (isset($param['apipath'])) {
+      apipath = $param["apipath"];
+      unset($param["apipath"]);
+      $param["apikey"] = $this->getApiKey();
+      $url = "{$apipath}?" . http_build_query($param);
+      
+      $bodyxml = $body->saveXML();
+
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);	curl_setopt($ch, CURLOPT_HEADER, FALSE);		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');		curl_setopt($ch, CURLOPT_POSTFIELDS, $bodyxml);		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/xml'));
+
+      $response = curl_exec($ch);
+
+      curl_close ($ch);
+      echo $response;
+    }
+    echo "";
+  }
+
+} */
