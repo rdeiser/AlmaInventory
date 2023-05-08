@@ -420,6 +420,7 @@ function addBarcode(barcode, show) {
   tr.append($("<td class='inventory_date'/>"));
   $("#restable tr.header").after(tr);
   processCodes(show);
+  addInventoryDate(show);
 }
 
 //Create new table row
@@ -504,6 +505,7 @@ function setRowStatus(tr, status, status_msg, show) {
   if (status_msg != null) tr.find("td.status_msg").text(status_msg);
   tr.addClass(status);
   autosave();
+  addInventoryDate(show);
   processCodes(show);
   if ($("#lastbarcode").text() == tr.attr("barcode")) {
     $("#laststatus").text(status).removeClass().addClass(status);
@@ -558,6 +560,30 @@ function getArrayValue(json, aname, vname) {
 function getArrayValueWithDef(json, aname, vname, def) {
   if (json == null) return def;
   return getValueWithDef(getArray(json, aname), vname, def);
+}
+
+function parseResponsePut(json) {
+
+  const date = new Date();
+  let year = date.getUTCFullYear();
+  let month = String(date.getUTCMonth()+1).padStart(2,"0");
+  let day = String(date.getUTCDate()).padStart(2,"0");
+  let currentDate = `${year}-${month}-${day}`;
+
+  var itemData = getArray(json, "item_data");
+  var itemLink = getValue(itemLink, "link");
+  var inventoryDate = getArrayValue(itemData, "inventory_date", "value");
+  if (inventoryDate !== currentDate) {
+      const body = json;
+      const obj = JSON.parse(body);
+      obj.item_data.inventory_number["inventory_date"] = currentDate;
+      const updatedBody = JSON.stringify(obj);
+
+      return updatedBody;
+      // const updatedMAP = new Map(Object.entries(obj));  
+              
+  }
+
 }
 
 function parseResponse(barcode, json) {
@@ -656,6 +682,35 @@ function parseResponse(barcode, json) {
   }
   return resdata;
 }
+// will need to modify this a bit more.  add the inventory date to the body and then place the body into the put request
+function addInventoryDate(show) {
+  
+  // pulls the barcode from the input box and validates it
+  if ($("#restable tr.processing").length > 0) return;
+  var tr = $("#restable tr.new:last");
+
+  if (tr.length == 0) return;
+  tr.removeClass("new").addClass("processing");
+  var barcode = tr.attr("barcode");
+
+  //If barcoe is invalid, mark with a status of "FAIL"
+  if (!isValidBarcode(barcode)) {
+    setRowStatus(tr, STAT_FAIL, "Invalid item barcode", show);
+    return;
+  }
+
+  // first creates the URL for the GET request
+  var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"items&item_barcode="+barcode;
+
+  var data = $.getJSON(url, function(rawdata) {
+    parseResponsePut(rawdata);
+  });
+  
+  var url = API_REDIRECT_PUT + "?apipath="+ encodeURIComponent(data["itemLink"])+data;
+      // return url;
+};
+
+// addInventoryDate();
 
 /*
  * Process new rows
@@ -669,6 +724,7 @@ function parseResponse(barcode, json) {
  * (6) Set status to the status from the web service
  */
 function processCodes(show) {
+  
   if ($("#restable tr.processing").length > 0) return;
   var tr = $("#restable tr.new:last");
 
@@ -684,6 +740,7 @@ function processCodes(show) {
 
   //Call the web service to get data for the barcode
   var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"items&item_barcode="+barcode;
+
   $.getJSON(url, function(rawdata){
     var data = parseResponse(getBarcodeFromUrl(this.url), rawdata);
     var resbarcode = data["barcode"];
@@ -722,6 +779,7 @@ function processCodes(show) {
     setLcSortStat(tr);
 
     setRowStatus(tr, tr.find("td.status").text(), null, show);
+
   }).fail(function() {
     setRowStatus(tr, STAT_FAIL, "Connection Error", show);
   });
