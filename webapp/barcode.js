@@ -420,7 +420,7 @@ function addBarcode(barcode, show) {
   tr.append($("<td class='inventory_date'/>"));
   $("#restable tr.header").after(tr);
   processCodes(show);
-  addInventoryDate(show);
+  // addInventoryDate(show);
 }
 
 //Create new table row
@@ -505,7 +505,7 @@ function setRowStatus(tr, status, status_msg, show) {
   if (status_msg != null) tr.find("td.status_msg").text(status_msg);
   tr.addClass(status);
   autosave();
-  addInventoryDate(show);
+  // addInventoryDate(show);
   processCodes(show);
   if ($("#lastbarcode").text() == tr.attr("barcode")) {
     $("#laststatus").text(status).removeClass().addClass(status);
@@ -683,7 +683,7 @@ function parseResponse(barcode, json) {
   return resdata;
 }
 // will need to modify this a bit more.  add the inventory date to the body and then place the body into the put request
-function addInventoryDate(show) {
+function addInventoryDate() {
   
   // pulls the barcode from the input box and validates it
   if ($("#restable tr.processing").length > 0) return;
@@ -708,7 +708,8 @@ function addInventoryDate(show) {
   
   var url = API_REDIRECT_PUT + "?apipath="+ encodeURIComponent(data["itemLink"])+data;
       // return url;
-};
+
+    };
 
 // addInventoryDate();
 
@@ -724,6 +725,8 @@ function addInventoryDate(show) {
  * (6) Set status to the status from the web service
  */
 function processCodes(show) {
+
+  addInventoryDate();
   
   if ($("#restable tr.processing").length > 0) return;
   var tr = $("#restable tr.new:last");
