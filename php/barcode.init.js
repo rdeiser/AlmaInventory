@@ -18,7 +18,7 @@ var BARCODE_MSG = "Enter a 12 digit barcode starting with the letter 'A' followe
 
 
 
-function parseResponsePut(barcode, json) {
+/* function parseResponsePut(barcode, json) {
 
     const date = new Date();
     let year = date.getUTCFullYear();
@@ -40,4 +40,4 @@ function parseResponsePut(barcode, json) {
                 
     }
 
-}
+} */
