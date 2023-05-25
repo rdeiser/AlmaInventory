@@ -1,5 +1,6 @@
 <?php
 //Author: Terry Brady, Georgetown University Libraries
+
 class Alma {
 	function __construct() {
       $configpath = parse_ini_file ("Alma.prop", false);
@@ -34,55 +35,39 @@ class Alma {
     }
     echo "";
   }
-}
+// Alma PUT cURL -- added by K-State Libraries 05/2023
+  function putRequest($param, $body) {
+    if (isset($param["apipath"])) {
+      $apipath = $param["apipath"];
+      unset($param["apipath"]);
+      $param["generate_description"] = "false";
+      $param["apikey"] = $this->getApiKey();
+      $url = "{$apipath}" .  http_build_query($param);
+      $url = str_replace("apipath=", "", $url);
+  
+      $ch = curl_init();
+  
+      curl_setopt($ch, CURLOPT_URL, urldecode($url));
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Accept: application/json',
+        'Content-Type: application/json'
+      ));
+      $response = curl_exec($ch);
+      $code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
+      curl_close($ch);
+      // print urldecode($url); // troubleshooting for json body
 
-class AlmaPut {
-// }
-// Line 308 in grima
-  // {{{ put - general function for PUT (update) API calls
-/* *
- * @brief general function for PUT (update) API calls
- *
- * @param string $url - URL pattern string with parameters in {}
- * @param array $URLparams - URL parameters
- * @param array $QSparams - query string parameters
- * @param DomDocument $body - record to update Alma record with
- * @return DomDocument - record as it now appears in Alma
- */
+      // print_r($body); // troubleshooting for json body
 
- // function put($param,$body) {
-  function put($param,$body) {
-
-    function put($param, $body) {
-   if (isset($param["apipath"])){
-   $apipath = $param["apipath"];
-   unset($param["apipath"]);
-   $param["apipath"] = $this->getApiKey();
-   $url = "{$apipath}?" . http_build_query($param);
-
-   $bodyjson = json_encode($body);
-
-   $ch = curl_init();
-   curl_setopt($ch, CURLOPT_URL, $url);
-   curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-   curl_setopt($ch, CURLOPT_HEADER, FALSE);
-   curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-   curl_setopt($ch, CURLOPT_POSTFIELDS, $bodyjson);
-   curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-   $response = curl_exec($ch);
-   $code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
-   if (curl_errno($ch)) {
-       throw new Exception("Network error: " . curl_error($ch));
-   }
-   curl_close($ch);
-   $json = json_decode($response, true);
-   if ($json === null) {
-       throw new Exception("Malformed JSON from Alma: " . json_last_error_msg());
-   }
-   return $json;
-}
+      echo $response;
     }
-}
-// }}}
+    return null;
+
+  }
+
+
 
 }

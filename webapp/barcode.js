@@ -505,7 +505,6 @@ function setRowStatus(tr, status, status_msg, show) {
   if (status_msg != null) tr.find("td.status_msg").text(status_msg);
   tr.addClass(status);
   autosave();
-  // addInventoryDate(show);
   processCodes(show);
   if ($("#lastbarcode").text() == tr.attr("barcode")) {
     $("#laststatus").text(status).removeClass().addClass(status);
@@ -562,30 +561,6 @@ function getArrayValueWithDef(json, aname, vname, def) {
   return getValueWithDef(getArray(json, aname), vname, def);
 }
 
-function parseResponsePut(json) {
-
-  const date = new Date();
-  let year = date.getUTCFullYear();
-  let month = String(date.getUTCMonth()+1).padStart(2,"0");
-  let day = String(date.getUTCDate()).padStart(2,"0");
-  let currentDate = `${year}-${month}-${day}`;
-
-  var itemData = getArray(json, "item_data");
-  var itemLink = getValue(itemLink, "link");
-  var inventoryDate = getArrayValue(itemData, "inventory_date", "value");
-  if (inventoryDate !== currentDate) {
-      const body = json;
-      const obj = JSON.parse(body);
-      obj.item_data.inventory_number["inventory_date"] = currentDate;
-      const updatedBody = JSON.stringify(obj);
-
-      return updatedBody;
-      // const updatedMAP = new Map(Object.entries(obj));  
-              
-  }
-
-}
-
 function parseResponse(barcode, json) {
   var resdata = {}
   if ('errorsExist' in json) {
@@ -612,10 +587,10 @@ function parseResponse(barcode, json) {
     var holdingData = getArray(json, "holding_data");
     var holdingLink = getValue(holdingData, "link");
     var itemData = getArray(json, "item_data");
+    var itemLink = getArray(json, "link");
     var loc = getArrayValue(itemData, "location", "value");
     var tempLoc = getArrayValue(holdingData, "temp_location", "");
-    //var base = getArrayValue(itemData, "base_status", "value");
-    //var requested = getValue(itemData, "requested");
+
     var process = getArrayValue(itemData, "process_type", "value")
         .replace(/_/g," ")
         .replace(/WORK ORDER.*/,"Work Order");
@@ -660,7 +635,7 @@ function parseResponse(barcode, json) {
       status_msg += "Item has a temp location. ";
     }
 
-
+// START -- Additional Item data fields -- added by K-State Libraries 05/2023
     resdata = {
       "barcode"       : barcode,
       "bib_id"        : getValue(bibData, "mms_id"),
@@ -674,6 +649,9 @@ function parseResponse(barcode, json) {
       "title"         : getValue(bibData, "title"),
       "bibLink"       : bibLink,
       "holdingLink"   : holdingLink,
+      "holdingData"   : holdingData,
+      "itemData"   : itemData,
+      "itemLink"      : itemLink,
       "inventory_date"   : getValue(itemData, "inventory_date"),
       "timestamp"     : timestamp,
       "status"        : status,
@@ -682,36 +660,7 @@ function parseResponse(barcode, json) {
   }
   return resdata;
 }
-// will need to modify this a bit more.  add the inventory date to the body and then place the body into the put request
-function addInventoryDate() {
-  
-  // pulls the barcode from the input box and validates it
-  if ($("#restable tr.processing").length > 0) return;
-  var tr = $("#restable tr.new:last");
 
-  if (tr.length == 0) return;
-  tr.removeClass("new").addClass("processing");
-  var barcode = tr.attr("barcode");
-
-  //If barcoe is invalid, mark with a status of "FAIL"
-  if (!isValidBarcode(barcode)) {
-    setRowStatus(tr, STAT_FAIL, "Invalid item barcode", show);
-    return;
-  }
-
-  // first creates the URL for the GET request
-  var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"items&item_barcode="+barcode;
-
-  var data = $.getJSON(url, function(rawdata) {
-    parseResponsePut(rawdata);
-  });
-  
-  var url = API_REDIRECT_PUT + "?apipath="+ encodeURIComponent(data["itemLink"])+data;
-      // return url;
-
-    };
-
-// addInventoryDate();
 
 /*
  * Process new rows
@@ -725,8 +674,6 @@ function addInventoryDate() {
  * (6) Set status to the status from the web service
  */
 function processCodes(show) {
-
-  addInventoryDate();
   
   if ($("#restable tr.processing").length > 0) return;
   var tr = $("#restable tr.new:last");
@@ -750,14 +697,121 @@ function processCodes(show) {
     var tr = $("#restable tr[barcode="+resbarcode+"]");
     for(key in data) {
       var val = data[key] == null ? "" : data[key];
-      if (key == "bibLink" || key == "holdingLink") {
+      if (key == "bibLink" || key == "holdingLink" || key == "itemLink") {
         continue;
-      } else if (key == "bib_id" || key == "holding_id") {
+      } else if (key == "bib_id" || key == "holding_id" || key == "record_num") {
         tr.attr(key, val);
       } else {
         tr.find("td."+key).text(val);
       }
     }
+    // START -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
+    var itemBody = data["itemData"];
+
+    var modifiedItemBody = {
+      link: "string",
+      item_data: {
+        pid: itemBody.pid,
+        barcode: itemBody.barcode,
+        physical_material_type: {
+          value: itemBody.physical_material_type.value
+        },
+        policy: {
+          value: itemBody.policy.value,
+          desc: itemBody.policy.desc
+        },
+        provenance: {
+          value: itemBody.provenance.value
+        },
+        description: itemBody.description,
+        library: {
+          value: itemBody.library.value,
+          desc: itemBody.library.desc
+        },
+        location: {
+          value: itemBody.location.value,
+          desc: itemBody.location.desc
+        },
+        po_line: itemBody.po_line,
+        is_magnetic: itemBody.is_magnetic,
+        arrival_date: itemBody.arrival_date,
+        year_of_issue: itemBody.year_of_issue,
+        enumeration_a: itemBody.enumeration_a,
+        enumeration_b: itemBody.enumeration_b,
+        enumeration_c: itemBody.enumeration_c,
+        enumeration_d: itemBody.enumeration_d,
+        enumeration_e: itemBody.enumeration_e,
+        enumeration_f: itemBody.enumeration_f,
+        enumeration_g: itemBody.enumeration_g,
+        enumeration_h: itemBody.enumeration_h,
+        chronology_i: itemBody.chronology_i,
+        chronology_j: itemBody.chronology_j,
+        chronology_k: itemBody.chronology_k,
+        chronology_l: itemBody.chronology_l,
+        chronology_m: itemBody.chronology_m,
+        break_indicator: {
+          value: itemBody.break_indicator.value
+        },
+        pattern_type: {
+          value: itemBody.pattern_type.value
+        },
+        linking_number: itemBody.linking_number,
+        receiving_operator: itemBody.receiving_operator,
+        inventory_number: itemBody.inventory_number,
+        // inventory_date: itemBody.inventory_date,
+        inventory_date: "1989-09-22Z",
+        inventory_price: itemBody.inventory_price,
+        alternative_call_number: itemBody.alternative_call_number,
+        alternative_call_number_type: {
+          value: itemBody.alternative_call_number_type.value
+        },
+        storage_location_id: itemBody.storage_location_id,
+        pieces: itemBody.pieces,
+        public_note: itemBody.public_note,
+        fulfillment_note: itemBody.fulfillment_note,
+        internal_note_1: itemBody.internal_note_1,
+        internal_note_2: itemBody.internal_note_2,
+        internal_note_3: itemBody.internal_note_3,
+        statistics_note_1: itemBody.statistics_note_1,
+        statistics_note_2: itemBody.statistics_note_2,
+        statistics_note_3: itemBody.statistics_note_3,
+        physical_condition: {
+          value: itemBody.physical_condition.value
+        },
+        committed_to_retain: {
+          value: itemBody.committed_to_retain.value
+        },
+        retention_reason: {
+          value: itemBody.retention_reason.value
+        },
+        retention_note: itemBody.retention_note
+      }
+    };
+    // END -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
+
+    // console.log(JSON.stringify(modifiedItemBody)); // troubleshooting for json body
+
+    // START -- jQuery to send the url and JSON body as one request to the barcodeReportRedirectPut.php wrapper -- added by K-State Libraries 05/2023
+    var url = API_REDIRECT_PUT + "?apipath=" + encodeURIComponent(data["itemLink"]);
+    $.ajax({
+      url: url, // Path to your wrapper PHP file
+      type: "PUT", // Or "GET" depending on how you handle the request in the PHP file
+      data: JSON.stringify({
+        url: "apipath=" + encodeURIComponent(data["itemLink"]) + "%3F",
+        body: modifiedItemBody
+      }),
+      dataType: "json",
+      contentType: "application/json",
+      success: function(response) {
+        // Handle the successful response here
+        console.log(response);
+      },
+      error: function(xhr, status, error) {
+        // Handle any errors that occur during the request
+        console.error(error);
+      }
+    });
+    // END -- jQuery to send the url and JSON body as one request to the barcodeReportRedirectPut.php wrapper -- added by K-State Libraries 05/2023
 
     var url = API_REDIRECT + "?apipath=" + encodeURIComponent(data["bibLink"]);
     $.getJSON(url, function(data){
