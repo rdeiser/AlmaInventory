@@ -706,7 +706,15 @@ function processCodes(show) {
       }
     }
     // START -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
+
+    // START -- format for "Today's Date" within the inventory date field
     var itemBody = data["itemData"];
+    const date = new Date();
+    let year = date.getUTCFullYear();
+    let month = String(date.getUTCMonth()+1).padStart(2,"0");
+    let day = String(date.getUTCDate()).padStart(2,"0");
+    let currentDate = `${year}-${month}-${day}Z`;
+    // END -- format for "Today's Date" within the inventory date field
 
     var modifiedItemBody = {
       link: "string",
@@ -759,7 +767,7 @@ function processCodes(show) {
         receiving_operator: itemBody.receiving_operator,
         inventory_number: itemBody.inventory_number,
         // inventory_date: itemBody.inventory_date,
-        inventory_date: "1989-09-22Z",
+        inventory_date: currentDate,
         inventory_price: itemBody.inventory_price,
         alternative_call_number: itemBody.alternative_call_number,
         alternative_call_number_type: {
