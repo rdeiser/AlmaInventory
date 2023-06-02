@@ -417,10 +417,9 @@ function addBarcode(barcode, show) {
   tr.append($("<td class='status'/>"));
   tr.append($("<td class='status_msg'/>"));
   tr.append($("<td class='timestamp'/>"));
-  tr.append($("<td class='inventory_date'/>"));
+  // tr.append($("<td class='inventory_date'/>"));
   $("#restable tr.header").after(tr);
   processCodes(show);
-  // addInventoryDate(show);
 }
 
 //Create new table row
@@ -471,7 +470,7 @@ function restoreRow(rowarr) {
     tr.append($("<td class='status'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status_msg'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='timestamp'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='inventory_date'>" + rowarr.shift() + "</td>"));
+    // tr.append($("<td class='inventory_date'>" + rowarr.shift() + "</td>"));
     tr.addClass(tr.find("td.status").text());
     $("#restable tr.header").after(tr);
     setLcSortStat(tr);
