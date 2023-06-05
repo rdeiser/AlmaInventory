@@ -1,0 +1,4 @@
+services:
+  alma-inventory:
+    build:
+      dockerfile: Dockerfile.php
