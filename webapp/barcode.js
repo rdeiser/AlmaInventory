@@ -402,6 +402,7 @@ function addCurrentBarcode() {
 //Add the barcode value to the table
 //  barcode - string
 //  show - boolean, indicates whether or not to display the barcode dialog after adding the barcode
+// START -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
 function addBarcode(barcode, show) {
   if (barcode == null || barcode == "") return;
   var tr = getNewRow(true, barcode);
@@ -409,6 +410,7 @@ function addBarcode(barcode, show) {
   tr.append($("<td class='call_number'/>"));
   // tr.append($("<td class='volume'/>"));
   tr.append($("<td class='title'/>"));
+  tr.append($("<td class='fulfillment_note'/>"));
   tr.append($("<td class='process'/>"));
   tr.append($("<td class='temp_location'/>"));
   tr.append($("<td class='bib_supp'/>"));
@@ -421,6 +423,7 @@ function addBarcode(barcode, show) {
   $("#restable tr.header").after(tr);
   processCodes(show);
 }
+// END -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
 
 //Create new table row
 //  processRow - boolean - indicates whether or not to add the "new" class that will trigger a rescan
@@ -450,7 +453,7 @@ function getButtonCell() {
   td.append($("<button onclick='javascript:refreshrow(this);'><i class='material-icons'>refresh</i></button>"));
   return td;
 }
-
+// START -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
 function restoreRow(rowarr) {
     if (rowarr == null) return;
     if (rowarr.length != 12) return;
@@ -462,6 +465,7 @@ function restoreRow(rowarr) {
     tr.append($("<td class='call_number'>" + rowarr.shift() + "</td>"));
     // tr.append($("<td class='volume'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
+    tr.append($("<td class='fulfillment_note'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='process'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='temp_location'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='bib_supp'>" + rowarr.shift() + "</td>"));
@@ -476,6 +480,7 @@ function restoreRow(rowarr) {
     setLcSortStat(tr);
     autosave()
 }
+// END -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
 
 //Save user session into html5 local storage
 function autosave() {
@@ -608,6 +613,10 @@ function parseResponse(barcode, json) {
       status_msg = "Empty call number. ";
     }
 
+    // START -- Add Fulfillment and Internal Note 1 into single column-- added by K-State Libraries 06/2023
+    var fulNote = getValue(itemData, "fulfillment_note") + " " + getValue(itemData, "internal_note_1");
+    // END -- Add Fulfillment and Internal Note 1 into single column-- added by K-State Libraries 06/2023
+
     // START -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
 
     var fullCopyId = " c." + getValue(holdingData, "copy_id");
@@ -643,7 +652,7 @@ function parseResponse(barcode, json) {
       status_msg += "Item has a temp location. ";
     }
 
-// START -- Additional Item data fields; Combined Callno with Item Record Description and copy number -- added by K-State Libraries 05/2023
+// START -- Additional Item data fields; Combined Callno with Item Record Description and copy number; Add combined Fulfillment and Internal Note 1 fields -- added by K-State Libraries 05/2023
     resdata = {
       "barcode"       : barcode,
       "bib_id"        : getValue(bibData, "mms_id"),
@@ -655,6 +664,7 @@ function parseResponse(barcode, json) {
       // "volume"        : getValue(itemData, "description"),
       "call_number"   : callno + " " + getValue(itemData, "description") + copyId,
       "title"         : getValue(bibData, "title"),
+      "fulfillment_note"  : fulNote,
       "bibLink"       : bibLink,
       "holdingLink"   : holdingLink,
       "holdingData"   : holdingData,
