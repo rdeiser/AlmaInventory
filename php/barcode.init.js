@@ -4,7 +4,7 @@ var API_REDIRECT = "php/barcodeReportRedirect.php";
 var API_REDIRECT_PUT = "php/barcodeReportRedirectPut.php";
 
 //Location validation Regular Expression
-var LOC_REGEX = /^main$/;
+var LOC_REGEX = /^arch$/;
 
 //Location format message
 var LOC_MSG = "Invalid Location";
