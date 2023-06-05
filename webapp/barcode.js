@@ -321,7 +321,7 @@ function barcodeDialog() {
   $("#lastbarcode").text(tr.find("th.barcode").text());
   $("#bcCall").text(tr.find("td.call_number").text());
   $("#bcTitle").text(tr.find("td.title").text());
-  $("#bcVol").text(tr.find("td.volume").text());
+  // $("#bcVol").text(tr.find("td.volume").text());
 
   //Show status for last scanned item
   var status = tr.find("td.status").text();
@@ -407,7 +407,7 @@ function addBarcode(barcode, show) {
   var tr = getNewRow(true, barcode);
   tr.append($("<td class='location_code'/>"));
   tr.append($("<td class='call_number'/>"));
-  tr.append($("<td class='volume'/>"));
+  // tr.append($("<td class='volume'/>"));
   tr.append($("<td class='title'/>"));
   tr.append($("<td class='process'/>"));
   tr.append($("<td class='temp_location'/>"));
@@ -460,7 +460,7 @@ function restoreRow(rowarr) {
 
     tr.append($("<td class='location_code'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='call_number'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='volume'>" + rowarr.shift() + "</td>"));
+    // tr.append($("<td class='volume'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='process'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='temp_location'>" + rowarr.shift() + "</td>"));
@@ -608,6 +608,15 @@ function parseResponse(barcode, json) {
       status_msg = "Empty call number. ";
     }
 
+    // START -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
+
+    var fullCopyId = " c." + getValue(holdingData, "copy_id");
+
+    var copyId = fullCopyId
+        .replace(/_/g," ")
+        .replace(/(c.0$|c.1$)/, "");
+    // END -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
+
     if (!LOC_REGEX.test(loc)) {
       status = (status == "PASS") ? "PULL-LOC" : "PULL-MULT";
       status_msg += LOC_MSG;
@@ -634,7 +643,7 @@ function parseResponse(barcode, json) {
       status_msg += "Item has a temp location. ";
     }
 
-// START -- Additional Item data fields -- added by K-State Libraries 05/2023
+// START -- Additional Item data fields; Combined Callno with Item Record Description and copy number -- added by K-State Libraries 05/2023
     resdata = {
       "barcode"       : barcode,
       "bib_id"        : getValue(bibData, "mms_id"),
@@ -643,8 +652,8 @@ function parseResponse(barcode, json) {
       "location_code" : loc,
       "process"       : process,
       "temp_location" : tempLoc,
-      "volume"        : getValue(itemData, "description"),
-      "call_number"   : callno,
+      // "volume"        : getValue(itemData, "description"),
+      "call_number"   : callno + " " + getValue(itemData, "description") + copyId,
       "title"         : getValue(bibData, "title"),
       "bibLink"       : bibLink,
       "holdingLink"   : holdingLink,
