@@ -2,7 +2,9 @@ version: "3.3"
 
 services:
   alma-inventory:
-    image: rdeiser/alma-inventory-php
+    image: kstatelibraries/alma-inventory-php
+    build:
+      dockerfile: Dockerfile.php
     ports:
       - 80:80
     volumes:
