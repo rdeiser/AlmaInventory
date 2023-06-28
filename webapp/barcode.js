@@ -626,10 +626,23 @@ function parseResponse(barcode, json) {
         .replace(/(c.0$|c.1$)/, "");
     // END -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
 
-    if (!LOC_REGEX.test(loc)) {
+    // START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023
+
+        var selectLocation = document.getElementById("locationCode");
+    var locCode = selectLocation.value;
+
+
+    if (locCode !== loc) {
       status = (status == "PASS") ? "PULL-LOC" : "PULL-MULT";
       status_msg += LOC_MSG;
     }
+
+    /* if (!LOC_REGEX.test(loc)) {
+      status = (status == "PASS") ? "PULL-LOC" : "PULL-MULT";
+      status_msg += LOC_MSG;
+    } */
+
+    // END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023
 
     if (process == "LOAN") {
       status = (status == "PASS") ? "PULL-DUE" : "PULL-MULT";
