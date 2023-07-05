@@ -2,13 +2,12 @@ version: "3.3"
 
 services:
   alma-inventory:
-    image: kstatelibraries/alma-inventory-php
-    build:
-      dockerfile: Dockerfile.php
+    image: kstatelibraries/alma-inventory
     ports:
-      - 80:80
+      - "${DOCKER_WEB_PORT_FORWARD:-127.0.0.1:8010}:80"
     volumes:
       - "./local.prop:/var/data/local.prop"
       - "./gsheet.prop.json:/var/www/html/gsheet.prop.json"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
     tty: true
     stdin_open: true
