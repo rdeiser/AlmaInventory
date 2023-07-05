@@ -51,6 +51,17 @@ Author: Terry Brady, Georgetown University Libraries
       <label for="name">Barcode</label>
       <input type="text" name="barcode" id="barcode" value="" class="text ui-widget-content ui-corner-all">
       <button id="doBulk" title="Bulk Add Barcodes by Copy/Paste" type="button">...</button>
+      <!-- START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
+      <br><br>
+      <select id="libraryCode" name="libraryCode">
+        <option value="" selected="selected">Select Library</option>
+      </select>
+
+      <select id="locationCode" name="locationCode">
+        <option value="" selected="selected">Select Location</option>
+      </select>
+      
+      <!-- END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
 
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
@@ -96,5 +107,8 @@ Author: Terry Brady, Georgetown University Libraries
 </div>
 
 </div>
+<!-- START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
+<script type="text/javascript" src="locationDropdown.js"></script>
+<!-- END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
 </body>
 </html>
