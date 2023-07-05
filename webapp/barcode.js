@@ -628,7 +628,7 @@ function parseResponse(barcode, json) {
 
     // START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023
 
-        var selectLocation = document.getElementById("locationCode");
+    var selectLocation = document.getElementById("locationCode");
     var locCode = selectLocation.value;
 
 
