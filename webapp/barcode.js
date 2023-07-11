@@ -352,6 +352,9 @@ function makeSpreadsheetName() {
     if ($(this).text() != "") $(this).addClass("has_val");
   });
 
+  var locName = document.getElementById("locationCode");
+  var locNameValue = locName.value;
+
   var start = $("tr.datarow td.call_number.has_val:first").text();
   start = (start == "") ? "NA" : start;
 
@@ -359,7 +362,7 @@ function makeSpreadsheetName() {
   end = (end == "") ? "NA" : end;
 
   $("td.call_number").removeClass("has_val");
-  return end + "--" + start;
+  return locNameValue + "_" + end + "-- " + start;
 }
 
 //Delete row function
