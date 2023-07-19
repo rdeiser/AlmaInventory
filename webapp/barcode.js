@@ -409,6 +409,7 @@ function addCurrentBarcode() {
 function addBarcode(barcode, show) {
   if (barcode === null || barcode === "" || barcode === undefined) return;
   var tr = getNewRow(true, barcode);
+  tr.attr("barcode", barcode);
   tr.append($("<td class='bib_id'/>"));
   tr.append($("<td class='title'/>"));
   tr.append($("<td class='portNote'/>"));
@@ -503,25 +504,25 @@ function setRowStatus(tr, status, status_msg, show) {
   if (show) barcodeDialog();
 }
 
-function updateRowStat(tr) {
-  if (!(tr.hasClass("bib_check") && tr.hasClass("hold_check"))) {
-    //wait for the status to be set on the other field
-    return;
-  }
+// function updateRowStat(tr) {
+//   if (!(tr.hasClass("bib_check") && tr.hasClass("hold_check"))) {
+//     //wait for the status to be set on the other field
+//     return;
+//   }
 
-  var stat = tr.find("td.status").text();
-  var statmsg = tr.find("td.status_msg").text();
-  if (tr.hasClass("bib_supp")) {
-    statmsg += "Bib suppressed. ";
-    stat = (stat == "PASS") ? "PULL-SUPP" : "PULL-MULT";
-  } else if (tr.hasClass("hold_supp")) {
-    statmsg += "Holding suppressed. ";
-    stat = (stat == "PASS") ? "PULL-HSUPP" : "PULL-MULT";
-  } else {
-    return;
-  }
-  setRowStatus(tr, stat, statmsg, false);
-}
+//   var stat = tr.find("td.status").text();
+//   var statmsg = tr.find("td.status_msg").text();
+//   if (tr.hasClass("bib_supp")) {
+//     statmsg += "Bib suppressed. ";
+//     stat = (stat == "PASS") ? "PULL-SUPP" : "PULL-MULT";
+//   } else if (tr.hasClass("hold_supp")) {
+//     statmsg += "Holding suppressed. ";
+//     stat = (stat == "PASS") ? "PULL-HSUPP" : "PULL-MULT";
+//   } else {
+//     return;
+//   }
+//   setRowStatus(tr, stat, statmsg, false);
+// }
 
 
 function getBarcodeFromUrl(url) {
@@ -623,43 +624,41 @@ function parseResponse(barcode, json) {
  * (6) Set status to the status from the web service
  */
 function processCodes(show) {
-  
-  if ($("#restable tr.processing").length > 0) return;
-  var tr = $("#restable tr.new:last");
+  var tr = $("#restable tr.new:first");
+  if (tr.length === 0) return;
 
-  if (tr.length == 0) return;
   tr.removeClass("new").addClass("processing");
   var barcode = tr.attr("barcode");
 
-  //If barcoe is invalid, mark with a status of "FAIL"
+  // If barcode is invalid, mark with a status of "FAIL"
   if (!isValidBarcode(barcode)) {
     setRowStatus(tr, STAT_FAIL, "Invalid item barcode", show);
+    processCodes(show);
     return;
   }
 
-  //Call the web service to get data for the barcode
-  var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"electronic/e-collections/X/e-services/X/portfolios/"+barcode;
+  // Call the web service to get data for the barcode
+  var url = API_REDIRECT + "?apipath=" + encodeURIComponent(API_SERVICE) + "electronic/e-collections/X/e-services/X/portfolios/" + barcode;
 
-  $.getJSON(url, function(rawdata){
+  $.getJSON(url, function (rawdata) {
     var data = parseResponse(getBarcodeFromUrl(this.url), rawdata);
-    // console.log(data);
-    var resbarcode = data["id"];
-    var tr = $("#restable tr[barcode="+resbarcode+"]");
-    console.log(tr);
-    for(key in data) {
+    var resbarcode = data["barcode"];
+    var tr = $("#restable tr[barcode=" + resbarcode + "]");
+    for (key in data) {
       var val = data[key] == null ? "" : data[key];
       if (key == "bibLink" || key == "portLink") {
         continue;
       } else if (key == "bib_id") {
         tr.attr(key, val);
       } else {
-        tr.find("td."+key).text(val);
+        tr.find("td." + key).text(val);
       }
-      // console.log(val);
     }
     setRowStatus(tr, tr.find("td.status").text(), null, show);
-  }).fail(function() {
+    processCodes(show);
+  }).fail(function () {
     setRowStatus(tr, STAT_FAIL, "Connection Error", show);
+    processCodes(show);
   });
 }
 
