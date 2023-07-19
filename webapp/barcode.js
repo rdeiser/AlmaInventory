@@ -399,30 +399,24 @@ function addCurrentBarcode() {
   var v = $("#barcode").val();
   addBarcode(v, true);
   $("#barcode").val("").focus();
-  $("#message").text("Barcode " + v + " added. Scan the next barcode.");
+  $("#message").text("Portfolio " + v + " added. Scan the next portfolio.");
 }
 
 //Add the barcode value to the table
 //  barcode - string
 //  show - boolean, indicates whether or not to display the barcode dialog after adding the barcode
 // START -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
+// Modify for portfolio--colmn data within browser display
 function addBarcode(barcode, show) {
   if (barcode == null || barcode == "") return;
   var tr = getNewRow(true, barcode);
-  tr.append($("<td class='location_code'/>"));
-  tr.append($("<td class='call_number'/>"));
-  // tr.append($("<td class='volume'/>"));
+  // tr.append($("<td class='portfolio_id'/>"));
+  tr.append($("<td class='bib_id'/>"));
   tr.append($("<td class='title'/>"));
-  tr.append($("<td class='fulfillment_note'/>"));
-  tr.append($("<td class='process'/>"));
-  tr.append($("<td class='temp_location'/>"));
-  tr.append($("<td class='bib_supp'/>"));
-  tr.append($("<td class='hold_supp'/>"));
-  tr.append($("<td class='record_num'/>"));
+  tr.append($("<td class='portNote/>"));
   tr.append($("<td class='status'/>"));
   tr.append($("<td class='status_msg'/>"));
   tr.append($("<td class='timestamp'/>"));
-  // tr.append($("<td class='inventory_date'/>"));
   $("#restable tr.header").after(tr);
   processCodes(show);
 }
@@ -457,6 +451,7 @@ function getButtonCell() {
   return td;
 }
 // START -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
+// Modify for portfolio--colmn data within browser display
 function restoreRow(rowarr) {
     if (rowarr == null) return;
     if (rowarr.length != 12) return;
@@ -464,20 +459,13 @@ function restoreRow(rowarr) {
     var barcode = rowarr.shift();
     var tr = getNewRow(false, barcode);
 
-    tr.append($("<td class='location_code'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='call_number'>" + rowarr.shift() + "</td>"));
-    // tr.append($("<td class='volume'>" + rowarr.shift() + "</td>"));
+    // tr.append($("<td class='portfolio_id'>" + rowarr.shift() + "</td>"));
+    tr.append($("<td class='bib_id'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='fulfillment_note'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='process'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='temp_location'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='bib_supp'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='hold_supp'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='record_num'>" + rowarr.shift() + "</td>"));
+    tr.append($("<td class='portNote'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status_msg'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='timestamp'>" + rowarr.shift() + "</td>"));
-    // tr.append($("<td class='inventory_date'>" + rowarr.shift() + "</td>"));
     tr.addClass(tr.find("td.status").text());
     $("#restable tr.header").after(tr);
     setLcSortStat(tr);
@@ -541,8 +529,13 @@ function updateRowStat(tr) {
 
 
 function getBarcodeFromUrl(url) {
-  var match = /.*item_barcode=([Aa0-9]+)$/.exec(url);
+  var match = /.*portfolios\/([0-9]+)$/.exec(url);
   return (match.length > 1) ? match[1] : "";
+}
+
+function getJsonArray(json) {
+  if (json == null) return {};
+  return (json) ? json : {};
 }
 
 function getArray(json, name) {
@@ -587,20 +580,14 @@ function parseResponse(barcode, json) {
     };
   } else {
     var status = "PASS";
-    var status_msg = "Barcode Found. ";
-    var bibData = getArray(json, "bib_data");
-    var bibLink = getValue(bibData, "link");
+    var status_msg = "Portfolio Found. ";
+    var bibData = getArray(json, "resource_metadata");
+    var bibLink = getArrayValue(bibData, "mms_id", "link");
 
-    var holdingData = getArray(json, "holding_data");
-    var holdingLink = getValue(holdingData, "link");
-    var itemData = getArray(json, "item_data");
-    var itemLink = getArray(json, "link");
-    var loc = getArrayValue(itemData, "location", "value");
-    var tempLoc = getArrayValue(holdingData, "temp_location", "");
+    var portData = getJsonArray(json);
+    var portLink = getArray(json, "link");
+    var portNote = getArray(json, "note");
 
-    var process = getArrayValue(itemData, "process_type", "value")
-        .replace(/_/g," ")
-        .replace(/WORK ORDER.*/,"Work Order");
     var date = new Date();
     var m = date.getMonth() + 1;
     var timestamp = date.getFullYear()+"-"+
@@ -610,83 +597,15 @@ function parseResponse(barcode, json) {
       ((date.getMinutes() < 10) ? "0" + date.getMinutes() : date.getMinutes()) + ":" +
       ((date.getSeconds() < 10) ? "0" + date.getSeconds() : date.getSeconds());
 
-    var callno = getValue(holdingData, "call_number");
-    if (callno == "") {
-      status = "META-CALL";
-      status_msg = "Empty call number. ";
-    }
-
-    // START -- Add Fulfillment and Internal Note 1 into single column-- added by K-State Libraries 06/2023
-    var fulNote = getValue(itemData, "fulfillment_note") + " " + getValue(itemData, "internal_note_1");
-    // END -- Add Fulfillment and Internal Note 1 into single column-- added by K-State Libraries 06/2023
-
-    // START -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
-
-    var fullCopyId = " c." + getValue(holdingData, "copy_id");
-
-    var copyId = fullCopyId
-        .replace(/_/g," ")
-        .replace(/(c.0$|c.1$)/, "");
-    // END -- Add copy id with 'c.' for copy numbers greater than 1 -- added by K-State Libraries 06/2023
-
-    // START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023
-
-    var selectLocation = document.getElementById("locationCode");
-    var locCode = selectLocation.value;
-
-
-    if (locCode !== loc) {
-      status = (status == "PASS") ? "PULL-LOC" : "PULL-MULT";
-      status_msg += LOC_MSG;
-    }
-
-    /* if (!LOC_REGEX.test(loc)) {
-      status = (status == "PASS") ? "PULL-LOC" : "PULL-MULT";
-      status_msg += LOC_MSG;
-    } */
-
-    // END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023
-
-    if (process == "LOAN") {
-      status = (status == "PASS") ? "PULL-DUE" : "PULL-MULT";
-      status_msg += "Item is on LOAN. ";
-    } else if (process == "CLAIM RETURNED LOAN") {
-      status = (status == "PASS") ? "PULL-DUE" : "PULL-MULT";
-      status_msg += "Item is CLAIM RETURNED. ";
-    } else if (process == "LOST LOAN") {
-      status = (status == "PASS") ? "PULL-DUE" : "PULL-MULT";
-      status_msg += "Item is LOST. ";
-    } else {
-      if (process != "") {
-        status = (status == "PASS") ? "PULL-STAT" : "PULL-MULT";
-        status_msg += "Item has a process status. ";
-      }
-    }
-
-    if (tempLoc != "") {
-      status = (status == "PASS" || status == "PULL-LOC") ? "PULL-LOC" : "PULL-MULT";
-      status_msg += "Item has a temp location. ";
-    }
-
+    
 // START -- Additional Item data fields; Combined Callno with Item Record Description and copy number; Add combined Fulfillment and Internal Note 1 fields -- added by K-State Libraries 05/2023
     resdata = {
       "barcode"       : barcode,
-      "bib_id"        : getValue(bibData, "mms_id"),
-      "holding_id"    : getValue(holdingData, "holding_id"),
-      "record_num"    : getValue(itemData, "pid"),
-      "location_code" : loc,
-      "process"       : process,
-      "temp_location" : tempLoc,
-      // "volume"        : getValue(itemData, "description"),
-      "call_number"   : callno + " " + getValue(itemData, "description") + copyId,
+      "bib_id"        : getArrayValue(bibData, "mms_id", "value"),
       "title"         : getValue(bibData, "title"),
-      "fulfillment_note"  : fulNote,
       "bibLink"       : bibLink,
-      "holdingLink"   : holdingLink,
-      "holdingData"   : holdingData,
-      "itemData"   : itemData,
-      "itemLink"      : itemLink,
-      "inventory_date"   : getValue(itemData, "inventory_date"),
+      "portLink"   : portLink,
+      "portNote"   : portNote,
       "timestamp"     : timestamp,
       "status"        : status,
       "status_msg"    : status_msg
@@ -723,162 +642,26 @@ function processCodes(show) {
   }
 
   //Call the web service to get data for the barcode
-  var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"items&item_barcode="+barcode;
+  var url = API_REDIRECT + "?apipath="+encodeURIComponent(API_SERVICE)+"electronic/e-collections/X/e-services/X/portfolios/"+barcode;
 
   $.getJSON(url, function(rawdata){
     var data = parseResponse(getBarcodeFromUrl(this.url), rawdata);
-    var resbarcode = data["barcode"];
+    // console.log(data);
+    var resbarcode = data["id"];
     var tr = $("#restable tr[barcode="+resbarcode+"]");
+    console.log(tr);
     for(key in data) {
       var val = data[key] == null ? "" : data[key];
-      if (key == "bibLink" || key == "holdingLink" || key == "itemLink") {
+      if (key == "bibLink" || key == "portLink") {
         continue;
-      } else if (key == "bib_id" || key == "holding_id" || key == "record_num") {
+      } else if (key == "bib_id" || key == "portLink") {
         tr.attr(key, val);
       } else {
         tr.find("td."+key).text(val);
       }
+      // console.log(val);
     }
-    // START -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
-
-    // START -- format for "Today's Date" within the inventory date field
-    var itemBody = data["itemData"];
-    const date = new Date();
-    let year = date.getUTCFullYear();
-    let month = String(date.getUTCMonth()+1).padStart(2,"0");
-    let day = String(date.getUTCDate()).padStart(2,"0");
-    let currentDate = `${year}-${month}-${day}Z`;
-    // END -- format for "Today's Date" within the inventory date field
-
-    var modifiedItemBody = {
-      link: "string",
-      item_data: {
-        pid: itemBody.pid,
-        barcode: itemBody.barcode,
-        physical_material_type: {
-          value: itemBody.physical_material_type.value
-        },
-        policy: {
-          value: itemBody.policy.value,
-          desc: itemBody.policy.desc
-        },
-        provenance: {
-          value: itemBody.provenance.value
-        },
-        description: itemBody.description,
-        library: {
-          value: itemBody.library.value,
-          desc: itemBody.library.desc
-        },
-        location: {
-          value: itemBody.location.value,
-          desc: itemBody.location.desc
-        },
-        po_line: itemBody.po_line,
-        is_magnetic: itemBody.is_magnetic,
-        arrival_date: itemBody.arrival_date,
-        year_of_issue: itemBody.year_of_issue,
-        enumeration_a: itemBody.enumeration_a,
-        enumeration_b: itemBody.enumeration_b,
-        enumeration_c: itemBody.enumeration_c,
-        enumeration_d: itemBody.enumeration_d,
-        enumeration_e: itemBody.enumeration_e,
-        enumeration_f: itemBody.enumeration_f,
-        enumeration_g: itemBody.enumeration_g,
-        enumeration_h: itemBody.enumeration_h,
-        chronology_i: itemBody.chronology_i,
-        chronology_j: itemBody.chronology_j,
-        chronology_k: itemBody.chronology_k,
-        chronology_l: itemBody.chronology_l,
-        chronology_m: itemBody.chronology_m,
-        break_indicator: {
-          value: itemBody.break_indicator.value
-        },
-        pattern_type: {
-          value: itemBody.pattern_type.value
-        },
-        linking_number: itemBody.linking_number,
-        receiving_operator: itemBody.receiving_operator,
-        inventory_number: itemBody.inventory_number,
-        // inventory_date: itemBody.inventory_date,
-        inventory_date: currentDate,
-        inventory_price: itemBody.inventory_price,
-        alternative_call_number: itemBody.alternative_call_number,
-        alternative_call_number_type: {
-          value: itemBody.alternative_call_number_type.value
-        },
-        storage_location_id: itemBody.storage_location_id,
-        pieces: itemBody.pieces,
-        public_note: itemBody.public_note,
-        fulfillment_note: itemBody.fulfillment_note,
-        internal_note_1: itemBody.internal_note_1,
-        internal_note_2: itemBody.internal_note_2,
-        internal_note_3: itemBody.internal_note_3,
-        statistics_note_1: itemBody.statistics_note_1,
-        statistics_note_2: itemBody.statistics_note_2,
-        statistics_note_3: itemBody.statistics_note_3,
-        physical_condition: {
-          value: itemBody.physical_condition.value
-        },
-        committed_to_retain: {
-          value: itemBody.committed_to_retain.value
-        },
-        retention_reason: {
-          value: itemBody.retention_reason.value
-        },
-        retention_note: itemBody.retention_note
-      }
-    };
-    // END -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
-
-    // console.log(JSON.stringify(modifiedItemBody)); // troubleshooting for json body
-
-    // START -- jQuery to send the url and JSON body as one request to the barcodeReportRedirectPut.php wrapper -- added by K-State Libraries 05/2023
-    var url = API_REDIRECT_PUT + "?apipath=" + encodeURIComponent(data["itemLink"]);
-    $.ajax({
-      url: url, // Path to your wrapper PHP file
-      type: "PUT", // Or "GET" depending on how you handle the request in the PHP file
-      data: JSON.stringify({
-        url: "apipath=" + encodeURIComponent(data["itemLink"]) + "%3F",
-        body: modifiedItemBody
-      }),
-      dataType: "json",
-      contentType: "application/json",
-      success: function(response) {
-        // Handle the successful response here
-        console.log(response);
-      },
-      error: function(xhr, status, error) {
-        // Handle any errors that occur during the request
-        console.error(error);
-      }
-    });
-    // END -- jQuery to send the url and JSON body as one request to the barcodeReportRedirectPut.php wrapper -- added by K-State Libraries 05/2023
-
-    var url = API_REDIRECT + "?apipath=" + encodeURIComponent(data["bibLink"]);
-    $.getJSON(url, function(data){
-      if ((getValue(data, "suppress_from_publishing") == "true")) {
-        $("tr[bib_id=" + data["mms_id"] + "] td.bib_supp")
-          .text("X");
-        tr.addClass("bib_supp");
-      }
-      tr.addClass("bib_check");
-      updateRowStat(tr);
-    });
-    url = API_REDIRECT + "?apipath=" + encodeURIComponent(data["holdingLink"]);
-    $.getJSON(url, function(data){
-      if ((getValue(data, "suppress_from_publishing") == "true")) {
-        $("tr[holding_id=" + data["holding_id"] + "] td.hold_supp")
-          .text("X");
-        tr.addClass("hold_supp");
-      }
-      tr.addClass("hold_check");
-      updateRowStat(tr);
-    });
-    setLcSortStat(tr);
-
     setRowStatus(tr, tr.find("td.status").text(), null, show);
-
   }).fail(function() {
     setRowStatus(tr, STAT_FAIL, "Connection Error", show);
   });

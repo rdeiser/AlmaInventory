@@ -51,17 +51,6 @@ Author: Terry Brady, Georgetown University Libraries
       <label for="name">Barcode</label>
       <input type="text" name="barcode" id="barcode" value="" class="text ui-widget-content ui-corner-all">
       <button id="doBulk" title="Bulk Add Barcodes by Copy/Paste" type="button">...</button>
-      <!-- START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
-      <br><br>
-      <select id="libraryCode" name="libraryCode">
-        <option value="" selected="selected">Select Library</option>
-      </select>
-
-      <select id="locationCode" name="locationCode">
-        <option value="" selected="selected">Select Location</option>
-      </select>
-      
-      <!-- END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
@@ -86,28 +75,17 @@ Author: Terry Brady, Georgetown University Libraries
 <table id='restable'>
 <tr class='header'>
 <th class='action noexport'/>
-<th class='role'>Barcode</th>
-<th class='role'>Location Code</th>
-<th class='role wide'>Call Number</th>
-<!-- <th class='role'>Volume</th> -->
+<th class='role'>Portfolio Id</th>
+<th class='role'>MMS Id</th>
 <th class='role wide'>Title</th>
-<th class='role wide'>Fulfillment Note</th>
-<th class='role'>Process</th>
-<th class='role'>Temp Location</th>
-<th class='role'>Bib supp</th>
-<th class='role'>Hold supp</th>
-<th class='role'>Record Num</th>
+<th class='role wide'>Note</th>
 <th class='role'>Status</th>
 <th class='role wide'>Status Note</th>
 <th class='role'>Timestamp</th>
-<!-- <th class='role'>Inventory Date</th> -->
 </tr>
 </table>
 </div>
 
 </div>
-<!-- START -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
-<script type="text/javascript" src="locationDropdown.js"></script>
-<!-- END -- Enable user dropdown location validation -- added by K-State Libraires 06/2023 -->
 </body>
 </html>

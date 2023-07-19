@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   alma-inventory:
-    image: kstatelibraries/alma-inventory-php
+    image: eportfolio/alma-inventory-php
     build:
       dockerfile: Dockerfile.php
     ports:
