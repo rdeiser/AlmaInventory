@@ -406,14 +406,12 @@ function addCurrentBarcode() {
 //  barcode - string
 //  show - boolean, indicates whether or not to display the barcode dialog after adding the barcode
 // START -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
-// Modify for portfolio--colmn data within browser display
 function addBarcode(barcode, show) {
-  if (barcode == null || barcode == "") return;
+  if (barcode === null || barcode === "" || barcode === undefined) return;
   var tr = getNewRow(true, barcode);
-  // tr.append($("<td class='portfolio_id'/>"));
   tr.append($("<td class='bib_id'/>"));
   tr.append($("<td class='title'/>"));
-  tr.append($("<td class='portNote/>"));
+  tr.append($("<td class='portNote'/>"));
   tr.append($("<td class='status'/>"));
   tr.append($("<td class='status_msg'/>"));
   tr.append($("<td class='timestamp'/>"));
@@ -459,7 +457,6 @@ function restoreRow(rowarr) {
     var barcode = rowarr.shift();
     var tr = getNewRow(false, barcode);
 
-    // tr.append($("<td class='portfolio_id'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='bib_id'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='portNote'>" + rowarr.shift() + "</td>"));
@@ -468,7 +465,6 @@ function restoreRow(rowarr) {
     tr.append($("<td class='timestamp'>" + rowarr.shift() + "</td>"));
     tr.addClass(tr.find("td.status").text());
     $("#restable tr.header").after(tr);
-    setLcSortStat(tr);
     autosave()
 }
 // END -- Remove volume column and add fulfillment note-- added by K-State Libraries 06/2023
@@ -654,7 +650,7 @@ function processCodes(show) {
       var val = data[key] == null ? "" : data[key];
       if (key == "bibLink" || key == "portLink") {
         continue;
-      } else if (key == "bib_id" || key == "portLink") {
+      } else if (key == "bib_id") {
         tr.attr(key, val);
       } else {
         tr.find("td."+key).text(val);
