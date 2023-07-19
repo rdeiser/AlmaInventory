@@ -412,7 +412,7 @@ function addBarcode(barcode, show) {
   tr.attr("barcode", barcode);
   tr.append($("<td class='bib_id'/>"));
   tr.append($("<td class='title'/>"));
-  tr.append($("<td class='portNote'/>"));
+  tr.append($("<td class='contentNote'/>"));
   tr.append($("<td class='status'/>"));
   tr.append($("<td class='status_msg'/>"));
   tr.append($("<td class='timestamp'/>"));
@@ -460,7 +460,7 @@ function restoreRow(rowarr) {
 
     tr.append($("<td class='bib_id'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
-    tr.append($("<td class='portNote'>" + rowarr.shift() + "</td>"));
+    tr.append($("<td class='contentNote'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status_msg'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='timestamp'>" + rowarr.shift() + "</td>"));
@@ -540,6 +540,10 @@ function getArray(json, name) {
   return (name in json) ? json[name] : {};
 }
 
+function getArrayObject(obj, prop) {
+  return obj && obj[prop] && Array.isArray(obj[prop]) ? obj[prop] : [];
+}
+
 function getValueWithDef(json, name, def) {
   if (json == null) return def;
   return (name in json) ? json[name] : def;
@@ -580,10 +584,16 @@ function parseResponse(barcode, json) {
     var status_msg = "Portfolio Found. ";
     var bibData = getArray(json, "resource_metadata");
     var bibLink = getArrayValue(bibData, "mms_id", "link");
-
-    var portData = getJsonArray(json);
     var portLink = getArray(json, "link");
-    var portNote = getArray(json, "note");
+
+    // const jsonObject = JSON.parse(json);
+    var notes = getArrayObject(json, "note");
+    var contentNote = "";
+    notes.forEach(function (note) {
+      contentNote += note.content + "; ";
+    });
+    contentNote = contentNote.slice(0, -2);
+  
 
     var date = new Date();
     var m = date.getMonth() + 1;
@@ -602,7 +612,7 @@ function parseResponse(barcode, json) {
       "title"         : getValue(bibData, "title"),
       "bibLink"       : bibLink,
       "portLink"   : portLink,
-      "portNote"   : portNote,
+      "contentNote"   : contentNote,
       "timestamp"     : timestamp,
       "status"        : status,
       "status_msg"    : status_msg
