@@ -347,22 +347,8 @@ function bulkDialog() {
 //Compute name to be used for Google Sheet Export
 //Name will be based on the first and last call numbers scanned
 function makeSpreadsheetName() {
-  $("td.call_number").removeClass("has_val");
-  $("td.call_number").each(function(){
-    if ($(this).text() != "") $(this).addClass("has_val");
-  });
-
-  var locName = document.getElementById("locationCode");
-  var locNameValue = locName.value;
-
-  var start = $("tr.datarow td.call_number.has_val:first").text();
-  start = (start == "") ? "NA" : start;
-
-  var end = $("tr.datarow td.call_number.has_val:last").text();
-  end = (end == "") ? "NA" : end;
-
-  $("td.call_number").removeClass("has_val");
-  return locNameValue + "_" + end + "-- " + start;
+  var locNameValue = "Portfolio Notes";
+  return locNameValue;
 }
 
 //Delete row function
@@ -410,7 +396,7 @@ function addBarcode(barcode, show) {
   if (barcode === null || barcode === "" || barcode === undefined) return;
   var tr = getNewRow(true, barcode);
   tr.attr("barcode", barcode);
-  tr.append($("<td class='bib_id'/>"));
+  // tr.append($("<td class='bib_id'/>"));
   tr.append($("<td class='title'/>"));
   tr.append($("<td class='contentNote'/>"));
   tr.append($("<td class='status'/>"));
@@ -458,7 +444,7 @@ function restoreRow(rowarr) {
     var barcode = rowarr.shift();
     var tr = getNewRow(false, barcode);
 
-    tr.append($("<td class='bib_id'>" + rowarr.shift() + "</td>"));
+    // tr.append($("<td class='bib_id'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='title'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='contentNote'>" + rowarr.shift() + "</td>"));
     tr.append($("<td class='status'>" + rowarr.shift() + "</td>"));
