@@ -11,7 +11,7 @@ var LOC_MSG = "Invalid Location";
 
 
 //Barcode validation Regular expression
-var BARCODE_REGEX = /^[(A)0-9]{12}$/;
+var BARCODE_REGEX = /^[(AG)0-9]{12}$/;
 
 //Barcode Format message
 var BARCODE_MSG = "Enter a 12 digit barcode starting with the letter 'A' followed by numbers";
