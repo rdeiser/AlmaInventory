@@ -541,7 +541,7 @@ function updateRowStat(tr) {
 
 
 function getBarcodeFromUrl(url) {
-  var match = /.*item_barcode=([Aa0-9]+)$/.exec(url);
+  var match = /.*item_barcode=([AGag0-9]+)$/.exec(url);
   return (match.length > 1) ? match[1] : "";
 }
 
@@ -609,8 +609,11 @@ function parseResponse(barcode, json) {
       ((date.getHours() < 10) ? "0" + date.getHours() : date.getHours()) + ":" +
       ((date.getMinutes() < 10) ? "0" + date.getMinutes() : date.getMinutes()) + ":" +
       ((date.getSeconds() < 10) ? "0" + date.getSeconds() : date.getSeconds());
-
-    var callno = getValue(holdingData, "call_number");
+// START -- Remove MFHD MARC21 852 $k from call number-- added by K-State Libraries 07/2023
+    var fullCallNumber = getValue(holdingData, "call_number");
+    var subK = /(^AUDIO TAPE|^BLU\-RAY\/DVD|BLU\-RAY|^CD\-ROM|^COMPACT DISC|^COMPUTER DISK|^DVD\-ROM|^DVD|^EQUIPMENT|^LASERDISC|^MAP|^MEDIA|^MICROCARD|^MICROFICHE|^MICROFILM|^MICROPRINT|^PHONODISC|^VIDEO TAPE)/;
+// END -- Remove MFHD MARC21 852 $k from call number-- added by K-State Libraries 07/2023
+    var callno = fullCallNumber.replace(subK, '');
     if (callno == "") {
       status = "META-CALL";
       status_msg = "Empty call number. ";
