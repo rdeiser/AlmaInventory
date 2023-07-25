@@ -736,7 +736,7 @@ function processCodes(show) {
       var val = data[key] == null ? "" : data[key];
       if (key == "bibLink" || key == "holdingLink" || key == "itemLink") {
         continue;
-      } else if (key == "bib_id" || key == "holding_id" || key == "record_num") {
+      } else if (key == "bib_id" || key == "holding_id") {
         tr.attr(key, val);
       } else {
         tr.find("td."+key).text(val);
