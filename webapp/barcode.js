@@ -736,7 +736,7 @@ function processCodes(show) {
       var val = data[key] == null ? "" : data[key];
       if (key == "bibLink" || key == "holdingLink" || key == "itemLink") {
         continue;
-      } else if (key == "bib_id" || key == "holding_id" || key == "record_num") {
+      } else if (key == "bib_id" || key == "holding_id") {
         tr.attr(key, val);
       } else {
         tr.find("td."+key).text(val);
@@ -744,6 +744,7 @@ function processCodes(show) {
     }
     // START -- JSON Item Body for PUT API Call -- added by K-State Libraries 05/2023
 
+    if (data.status !== "NOT-FOUND") {
     // START -- format for "Today's Date" within the inventory date field
     var itemBody = data["itemData"];
     const date = new Date();
@@ -856,6 +857,7 @@ function processCodes(show) {
         console.error(error);
       }
     });
+  }
     // END -- jQuery to send the url and JSON body as one request to the barcodeReportRedirectPut.php wrapper -- added by K-State Libraries 05/2023
 
     var url = API_REDIRECT + "?apipath=" + encodeURIComponent(data["bibLink"]);
