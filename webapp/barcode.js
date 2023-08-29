@@ -596,7 +596,7 @@ function parseResponse(barcode, json) {
     var itemData = getArray(json, "item_data");
     var itemLink = getArray(json, "link");
     var loc = getArrayValue(itemData, "location", "value");
-    var tempLoc = getArrayValue(holdingData, "temp_location", "");
+    var tempLoc = getArrayValue(holdingData, "temp_location", "value");
 
     var process = getArrayValue(itemData, "process_type", "value")
         .replace(/_/g," ")
@@ -747,6 +747,7 @@ function processCodes(show) {
     if (data.status !== "NOT-FOUND") {
     // START -- format for "Today's Date" within the inventory date field
     var itemBody = data["itemData"];
+    var holdingBody = data["holdingData"];
     const date = new Date();
     let year = date.getUTCFullYear();
     let month = String(date.getUTCMonth()+1).padStart(2,"0");
@@ -756,6 +757,27 @@ function processCodes(show) {
 
     var modifiedItemBody = {
       link: "string",
+      holding_data: {
+        link: "string",
+        holding_id: holdingBody.holding_id,
+        copy_id: holdingBody.copy_id,
+        in_temp_location: holdingBody.in_temp_location,
+    temp_library: {
+      value: holdingBody.temp_library.value
+    },
+    temp_location: {
+      value: holdingBody.temp_location.value
+    },
+    temp_call_number_type: {
+      value: holdingBody.temp_call_number_type.value
+    },
+    temp_call_number: holdingBody.temp_call_number,
+    temp_call_number_source: holdingBody.temp_call_number_source,
+    temp_policy: {
+      value: holdingBody.temp_policy.value
+    },
+    due_back_date: holdingBody.due_back_date
+      },
       item_data: {
         pid: itemBody.pid,
         barcode: itemBody.barcode,
