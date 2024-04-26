@@ -22,7 +22,7 @@ jobs:
   tools:
     # Ensure this job never runs on forked repos. It's only executed for 'kstatelibraries/AlmaInventory'
     if: github.repository == 'kstatelibraries/AlmaInventory'
-    uses: kstatelibrariesit/kstatelibrariesit/.github/workflows/reusable-docker-build.yml@main
+    uses: kstatelibraries/kstatelibraries/.github/workflows/reusable-docker-build.yml@main
     with:
       build_id: tools
       image_name: kstatelibraries/alma-inventory
